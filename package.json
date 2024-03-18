@@ -1,7 +1,7 @@
 {
     "author": "Aaron Imming <aaim@protonmail.com>",
     "name": "vercel-preview-url-action",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "Capture a Vercel preview URL and feed it into your next GitHub action.",
     "main": "index.js",
     "husky": {
@@ -29,7 +29,7 @@
         "@actions/core": "^1.9.1",
         "@actions/github": "^5.0.1",
         "@deriv/deriv-api": "^1.0.10",
-        "@octokit/action": "^3.18.0"
+        "@octokit/action": "^6.0.7"
     },
     "devDependencies": {
         "husky": "^4.3.8",
