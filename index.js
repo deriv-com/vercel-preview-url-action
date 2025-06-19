@@ -47,8 +47,56 @@ const runAction = async () => {
         await cancelAction();
     }
 
-    const preview_url_regexp = new RegExp(core.getInput('preview_url_regexp'));
-    const regex_matches = comment.body.match(preview_url_regexp);
+    // Safely create and validate the regular expression
+    const preview_url_pattern = core.getInput('preview_url_regexp');
+    let preview_url_regexp;
+
+    try {
+        // Validate the regex pattern is not empty and has reasonable length
+        if (!preview_url_pattern || preview_url_pattern.length > 500) {
+            throw new Error('Invalid regex pattern: empty or too long');
+        }
+
+        // Check for potentially dangerous patterns that could cause ReDoS
+        const dangerousPatterns = [
+            /(\.\*){2,}/, // Multiple .* patterns
+            /(\.\+){2,}/, // Multiple .+ patterns
+            /(\([^)]*\*[^)]*\)){2,}/, // Nested quantifiers
+            /(\([^)]*\+[^)]*\)){2,}/, // Nested quantifiers with +
+        ];
+
+        if (dangerousPatterns.some(pattern => pattern.test(preview_url_pattern))) {
+            throw new Error('Potentially dangerous regex pattern detected');
+        }
+
+        preview_url_regexp = new RegExp(preview_url_pattern);
+    } catch (error) {
+        console.log('Invalid or unsafe regular expression pattern.', {
+            pattern: preview_url_pattern,
+            error: error.message,
+        });
+        await cancelAction();
+    }
+
+    // Execute regex with timeout protection
+    let regex_matches;
+    try {
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Regex execution timeout')), 1000);
+        });
+
+        const regexPromise = new Promise((resolve) => {
+            resolve(comment.body.match(preview_url_regexp));
+        });
+
+        regex_matches = await Promise.race([regexPromise, timeoutPromise]);
+    } catch (error) {
+        console.log('Regex execution failed or timed out.', {
+            error: error.message,
+            comment: comment.body,
+        });
+        await cancelAction();
+    }
 
     if (!regex_matches) {
         console.log("Unable to find a preview URL in comment's body.", {
