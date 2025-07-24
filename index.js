@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/action');
+const _ = require('lodash');
 
 const cancelAction = async () => {
     if (core.getInput('GITHUB_TOKEN')) {
@@ -69,7 +70,8 @@ const runAction = async () => {
             throw new Error('Potentially dangerous regex pattern detected');
         }
 
-        preview_url_regexp = new RegExp(preview_url_pattern);
+        const sanitizedPattern = _.escapeRegExp(preview_url_pattern);
+        preview_url_regexp = new RegExp(sanitizedPattern);
     } catch (error) {
         console.log('Invalid or unsafe regular expression pattern.', {
             pattern: preview_url_pattern,
