@@ -29,7 +29,8 @@
         "@actions/core": "^1.9.1",
         "@actions/github": "^6.0.1",
         "@deriv/deriv-api": "^1.0.10",
-        "@octokit/action": "^6.0.7"
+        "@octokit/action": "^6.0.7",
+        "lodash": "^4.17.21"
     },
     "devDependencies": {
         "husky": "^4.3.8",
