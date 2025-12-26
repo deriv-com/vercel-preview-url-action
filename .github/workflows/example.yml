@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [edited]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   capture_vercel_preview_url:
     name: Capture Vercel preview URL
