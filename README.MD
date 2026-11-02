@@ -15,7 +15,7 @@ Please note:
 
 - `cancel_on_strings`: Cancel the action when any of these (comma separated) strings appear in the edited comment.
 - `GITHUB_TOKEN`: Pass this (as `${{secrets.GITHUB_TOKEN}}`) to cancel actions instead of failing them.
-- `preview_url_regexp`: Regular expression pattern (without delimiters) to capture the preview URL. Ensure first capture group captures the preview URL. (default: `Preview: \[(.*)\]`)
+- `preview_url_regexp`: RE2-compatible regular expression (without delimiters) whose first capture group contains an HTTPS preview URL. The pattern is limited to 500 characters. (default: `\[Visit Preview\]\((https://[^)\s]+)\)`)
 - `vercel_bot_name`: The name of the Vercel account commenting on pull requests. (default: `vercel[bot]`)
 
 ## Outputs
@@ -44,7 +44,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Below is merely an example of what you could do with the preview URL.
       # The preview URL is accessed through ${{ steps.<step_id>.outputs.vercel_preview_url }}
-      - uses: actions/github-script@v3
+      - uses: actions/github-script@v9
+        env:
+          VERCEL_PREVIEW_URL: ${{ steps.vercel_preview_url.outputs.vercel_preview_url }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -52,6 +54,6 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'The preview URL is: ${{ steps.vercel_preview_url.outputs.vercel_preview_url }}.'
+              body: `The preview URL is: ${process.env.VERCEL_PREVIEW_URL}.`
             });
 ```
